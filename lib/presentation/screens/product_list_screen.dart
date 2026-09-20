@@ -14,6 +14,7 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -21,9 +22,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     _scrollController.addListener(_onScroll);
 
-    Future.microtask(
-      () => context.read<ProductProvider>().fetchProducts(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductProvider>().fetchProducts();
+    });
   }
 
   void _onScroll() {
@@ -36,6 +37,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -43,8 +45,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Catalog'),
+      title: TextField(
+        controller: _searchController,
+        decoration: const InputDecoration(
+          hintText: 'Search products...',
+          border: InputBorder.none,
+        ),
+        onChanged: (value) {
+          context.read<ProductProvider>().searchProducts(value);
+        },
       ),
+    ),
       body: Consumer<ProductProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
@@ -55,11 +66,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
           if (provider.errorMessage != null) {
             return Center(
-              child: Text(provider.errorMessage!),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(provider.errorMessage!),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: provider.fetchProducts,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
             );
           }
+          if (provider.products.isEmpty) {
+          return const Center(
+            child: Text('No products found'),
+          );
+}
 
-          return ListView.builder(
+          return RefreshIndicator(
+            onRefresh: provider.fetchProducts,
+            child: ListView.builder(
             controller: _scrollController,
             itemCount: provider.products.length +
                 (provider.isLoadingMore ? 1 : 0),
@@ -77,11 +105,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
               return ListTile(
                 leading: CachedNetworkImage(
-                  imageUrl: product.thumbnail,
+                imageUrl: product.thumbnail,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const SizedBox(
                   width: 60,
                   height: 60,
-                  fit: BoxFit.cover,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
+                errorWidget: (context, url, error) => const SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: Icon(Icons.broken_image),
+                ),
+              ),
                 title: Text(product.title),
                 subtitle: Text('\$${product.price}'),
                 onTap: () {
@@ -96,6 +136,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 },
               );
             },
+            )
           );
         },
       ),

@@ -73,9 +73,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             );
           }
 
-         return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+         return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
