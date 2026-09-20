@@ -23,5 +23,16 @@ class ProductApiService {
     .map((json) => Product.fromJson(json as Map<String, dynamic>))
     .toList();
   return productList;
+
+  
+}
+Future<Product> getProductById(int id) async {
+  final response = await http.get(
+    Uri.parse('$baseUrl/products/$id'),
+  );
+
+  final data = jsonDecode(response.body);
+
+  return Product.fromJson(data);
 }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/product_provider.dart';
+import 'product_detail_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -54,6 +55,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 ),
                 title: Text(product.title),
                 subtitle: Text('\$${product.price}'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailScreen(
+                        productId: product.id,
+                      ),
+                    ),
+                  );
+                },
               );
             },
           );
