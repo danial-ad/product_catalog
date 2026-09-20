@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+
 import '../providers/product_provider.dart';
 import 'product_detail_screen.dart';
 
@@ -12,13 +13,30 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
 
+    _scrollController.addListener(_onScroll);
+
     Future.microtask(
       () => context.read<ProductProvider>().fetchProducts(),
     );
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<ProductProvider>().loadMoreProducts();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -42,8 +60,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
           }
 
           return ListView.builder(
-            itemCount: provider.products.length,
+            controller: _scrollController,
+            itemCount: provider.products.length +
+                (provider.isLoadingMore ? 1 : 0),
             itemBuilder: (context, index) {
+              if (index >= provider.products.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
               final product = provider.products[index];
 
               return ListTile(

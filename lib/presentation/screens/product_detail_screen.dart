@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/services/product_api_service.dart';
 import '../../data/models/product.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final int productId;
@@ -42,6 +43,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.initState();
     _loadProduct();
   }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -104,10 +106,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: const EdgeInsets.only(right: 12),
-                        child: Image.network(
-                          product!.images[index],
+                        child: CachedNetworkImage(
+                          imageUrl: product!.images[index],
                           width: 250,
                           fit: BoxFit.cover,
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.broken_image,
+                            size: 50,
+                          ),
                         ),
                       );
                     },
