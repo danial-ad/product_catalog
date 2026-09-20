@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/product_provider.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -46,6 +46,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
               final product = provider.products[index];
 
               return ListTile(
+                leading: CachedNetworkImage(
+                  imageUrl: product.thumbnail,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                ),
                 title: Text(product.title),
                 subtitle: Text('\$${product.price}'),
               );
