@@ -35,4 +35,20 @@ Future<Product> getProductById(int id) async {
 
   return Product.fromJson(data);
 }
+
+Future<List<Product>> searchProducts(String query) async {
+  final response = await http.get(
+    Uri.parse('$baseUrl/products/search?q=$query'),
+  );
+
+  final data = jsonDecode(response.body);
+
+  final productList = (data['products'] as List)
+      .map((json) => Product.fromJson(json as Map<String, dynamic>))
+      .toList();
+
+  return productList;
+}
+
+
 }
